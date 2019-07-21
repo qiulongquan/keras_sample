@@ -1,37 +1,9 @@
-import tensorflow as tf
-import numpy as np
+# -*- coding: UTF-8 -*-
 
-
-# tfrecords_filename = 'train1.tfrecords'
-# writer = tf.python_io.TFRecordWriter(tfrecords_filename) # 创建.tfrecord文件，准备写入
-#
-# for i in range(100):
-#   img_raw = np.random.random_integers(0, 255, size=(7, 30))  # 创建7*30，取值在0-255之间随机数组
-#   img_raw = img_raw.tostring()
-#   example = tf.train.Example(features=tf.train.Features(
-#     feature={
-#       'label': tf.train.Feature(int64_list=tf.train.Int64List(value=[i])),
-#       'img_raw': tf.train.Feature(bytes_list=tf.train.BytesList(value=[img_raw]))
-#     }))
-#   writer.write(example.SerializeToString())
-#
-# writer.close()
-
-
-# Load the training data into two NumPy arrays, for example using `np.load()`.
-# with np.load("train1.tfrecords") as data:
-#   features = data["label"]
-#   # print(features)
-#   labels = data["img_raw"]
-
-# Assume that each row of `features` corresponds to the same row as `labels`.
-# assert features.shape[0] == labels.shape[0]
-#
-# dataset = tf.data.Dataset.from_tensor_slices((features, labels))
-# print(dataset)
-
-
+# 参考下面2个文章，学习tfrecord
 # https://blog.csdn.net/happyhorizion/article/details/77894055
+# https://blog.csdn.net/u010358677/article/details/70544241
+# 这个程序是一个例子，他没有读取真是的图片，而是采用随机数字填充了tfrecord文件，所以不能读取还原图片
 import tensorflow as tf
 import numpy as np
 import os
@@ -47,13 +19,15 @@ def encode_to_tfrecords(tfrecords_filename, data_num):
   writer = tf.python_io.TFRecordWriter('./' + tfrecords_filename)  # 创建.tfrecord文件，准备写入
 
   for i in range(data_num):
-    img_raw = np.random.randint(0, 255, size=(56, 56))
+    img_raw = np.random.randint(0, 25, size=(5, 5))
+    print(img_raw)
     img_raw = img_raw.tostring()
     example = tf.train.Example(features=tf.train.Features(
       feature={
         'label': tf.train.Feature(int64_list=tf.train.Int64List(value=[i])),
         'img_raw': tf.train.Feature(bytes_list=tf.train.BytesList(value=[img_raw]))
       }))
+    print(example)
     writer.write(example.SerializeToString())
 
   writer.close()
@@ -63,13 +37,14 @@ def encode_to_tfrecords(tfrecords_filename, data_num):
 def decode_from_tfrecords(filename_queue, is_batch):
   reader = tf.TFRecordReader()
   _, serialized_example = reader.read(filename_queue)  # 返回文件名和文件
+  print("serialized_example", serialized_example)
   features = tf.parse_single_example(serialized_example,
                                      features={
                                        'label': tf.FixedLenFeature([], tf.int64),
                                        'img_raw': tf.FixedLenFeature([], tf.string),
                                      })  # 取出包含image和label的feature对象
   image = tf.decode_raw(features['img_raw'], tf.int64)
-  image = tf.reshape(image, [56, 56])
+  image = tf.reshape(image, [5, 5])
   label = tf.cast(features['label'], tf.int64)
 
   # 而在tensorflow训练时，一般是采取batch的方式去读入数据。tensorflow提供了两种方式，
@@ -94,10 +69,10 @@ def decode_from_tfrecords(filename_queue, is_batch):
 if __name__ == '__main__':
   # make train.tfrecord
   train_filename = "train.tfrecords"
-  encode_to_tfrecords(train_filename, 100)
+  encode_to_tfrecords(train_filename, 10)
   ##    # make test.tfrecord
   test_filename = 'test.tfrecords'
-  encode_to_tfrecords(test_filename, 10)
+  encode_to_tfrecords(test_filename, 3)
 
   #    run_test = True
   filename_queue = tf.train.string_input_producer([train_filename], num_epochs=None)  # 读入流中
@@ -108,12 +83,13 @@ if __name__ == '__main__':
   with tf.Session() as sess:  # 开始一个会话
     init_op = tf.global_variables_initializer()
     sess.run(init_op)
+    # 下面的这两句代码非常重要，是读取数据必不可少的。
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)
 
     try:
       # while not coord.should_stop():
-      for i in range(2):
+      for i in range(1):
         example, l = sess.run([train_image, train_label])  # 在会话中取出image和label
         print('train:')
         print(example, l)
@@ -125,5 +101,6 @@ if __name__ == '__main__':
     finally:
       coord.request_stop()
 
+    # 测试函数的最后，要使用以下两句代码进行停止，就如同文件需要close()一样：
     coord.request_stop()
     coord.join(threads)
