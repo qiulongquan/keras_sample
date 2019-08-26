@@ -1,3 +1,7 @@
+# Kerasによる、ものすごくシンプルな深層学習の例
+# https://qiita.com/hiroeorz@github/items/33b85529be0829f34973
+
+
 from keras.models import Sequential
 from keras.layers import Activation, Dense
 from keras.utils.np_utils import to_categorical
@@ -22,7 +26,13 @@ X = np.array(X_list)
 # すなわち
 # [0, 1, 0, 1, 1, 1] => [[1,0], [0,1], [1,0], [0,1], [0,1], [0,1]]
 # に変換される。
+Y_list = [[0], [1], [0], [1], [1], [1]]
+print(type(Y_list))
+# <class 'list'>
+# Y = np.array(Y_list)
+# <class 'numpy.ndarray'> 需要把list转换成numpy.ndarray类型
 Y = to_categorical(Y_list)
+print(type(Y))
 
 # 学習のためのモデルを作る
 model = Sequential()
@@ -30,12 +40,15 @@ model = Sequential()
 model.add(Dense(input_dim=2, output_dim=10))
 # 活性化関数(ReLu関数)
 model.add(Activation("relu"))
+# model.add(Activation("tanh"))
 # 全結合層(10層->2層)
 model.add(Dense(output_dim=2))
 # 活性化関数(softmax関数)
 model.add(Activation("softmax"))
+# model.add(Activation("sigmoid"))
 # モデルをコンパイル
 model.compile(loss="categorical_crossentropy", optimizer="sgd", metrics=["accuracy"])
+# model.compile(loss="binary_crossentropy", optimizer="sgd", metrics=["accuracy"])
 # 学習を実行
 model.fit(X, Y, nb_epoch=3000, batch_size=32)
 
@@ -46,6 +59,7 @@ model.fit(X, Y, nb_epoch=3000, batch_size=32)
 results = model.predict_proba(np.array([[1, 1], [0, 0]]))
 # 結果を表示
 print("Predict:\n", results)
+
 
 # Predict:
 #  [[0.00369103 0.996309  ]
