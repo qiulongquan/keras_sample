@@ -105,6 +105,7 @@ for dir in os.listdir("data/train"):
             image = image.transpose(2, 0, 1)
             image = image.reshape(1, image.shape[0] * image.shape[1] * image.shape[2]).astype("float32")[0]
             result = model.predict_classes(np.array([image / 255.]))
+            print(result)
             print("标注值:", label, "机器预测结果:", result[0])
 
             total += 1.
