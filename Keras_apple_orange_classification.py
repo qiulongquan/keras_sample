@@ -23,9 +23,9 @@ for dir in os.listdir("data/train"):
     dir1 = "data/train/" + dir
     label = 0
 
-    if dir == "apple":    # appleはラベル0
+    if dir == "one_apple":    # appleはラベル0
         label = 0
-    elif dir == "orange": # orangeはラベル1
+    elif dir == "many_apples": # orangeはラベル1
         label = 1
 
     for file in os.listdir(dir1):
@@ -38,13 +38,22 @@ for dir in os.listdir("data/train"):
             image = np.array(Image.open(filepath).resize((25, 25)))
             print(filepath)
             # 配列を変換し、[[Redの配列],[Greenの配列],[Blueの配列]] のような形にする。
+            # 默认是轴按照0，1，2输出
+            # (225, 225, 3)
+            # 改成image.transpose(2, 0, 1)后 数组维度改变
+            # (3, 225, 225)
             image = image.transpose(2, 0, 1)
             # さらにフラットな1次元配列に変換。最初の1/3はRed、次がGreenの、最後がBlueの要素がフラットに並ぶ。
+            # 这个是各个维度的数值提取出来相乘
+            print(image.shape)
+            # (4, 25, 25)
+            # 这里的[0]表示的是数组的第1个数组，取出来。
             image = image.reshape(1, image.shape[0] * image.shape[1] * image.shape[2]).astype("float32")[0]
             # 出来上がった配列をimage_listに追加。
+            # （RGB的数值在0-255区间）第一个数组所有的值都除以255将数值变成0到1之间的数，便于运算
             image_list.append(image / 255.)
 
-# kerasに渡すためにnumpy配列に変換。
+# kerasに渡すためにnumpy配列に変換。　type:<class 'numpy.ndarray'>
 image_list = np.array(image_list)
 
 # ラベルの配列を1と0からなるラベル配列に変更
@@ -82,9 +91,9 @@ for dir in os.listdir("data/train"):
     dir1 = "data/test/" + dir
     label = 0
 
-    if dir == "apple":
+    if dir == "one_apple":
         label = 0
-    elif dir == "orange":
+    elif dir == "many_apples":
         label = 1
 
     for file in os.listdir(dir1):
@@ -96,11 +105,11 @@ for dir in os.listdir("data/train"):
             image = image.transpose(2, 0, 1)
             image = image.reshape(1, image.shape[0] * image.shape[1] * image.shape[2]).astype("float32")[0]
             result = model.predict_classes(np.array([image / 255.]))
-            print("label:", label, "result:", result[0])
+            print("标注值:", label, "机器预测结果:", result[0])
 
             total += 1.
 
             if label == result[0]:
                 ok_count += 1.
 
-print("seikai: ", ok_count / total * 100, "%")
+print("机器预测结果和标注值匹配度: ", ok_count / total * 100, "%")
