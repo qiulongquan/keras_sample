@@ -14,13 +14,15 @@ from keras import backend as K
 
 batch_size = 128
 num_classes = 10
-epochs = 12
+epochs = 1
 
 # input image dimensions
+# 图片默认导入的尺寸28 28
 img_rows, img_cols = 28, 28
 
 # the data, split between train and test sets
-(x_train, y_train), (x_test, y_test) = mnist.load_data()
+# 导入已经处理好的数据集包
+(x_train, y_train), (x_test, y_test) = mnist.load_data('/home/qiulongquan/github/keras_sample/data/weather_forecast/train/csv/data.pkl.gz')
 
 if K.image_data_format() == 'channels_first':
     x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
@@ -34,8 +36,14 @@ else:
 x_train = x_train.astype('float32')
 x_test = x_test.astype('float32')
 x_train /= 255
+print("y_test", y_test)
 x_test /= 255
+print("x_test", x_test)
 print('x_train shape:', x_train.shape)
+
+# y_test [7 2 1 ... 4 5 6]
+# x_test [[[[0.]
+
 print(x_train.shape[0], 'train samples')
 print(x_test.shape[0], 'test samples')
 

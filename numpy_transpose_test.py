@@ -22,7 +22,8 @@ print("b shape[1]", b.shape[1])
 b1 = b.reshape(1, b.shape[0] * b.shape[1]).astype("float32")[0]
 print("b1:", b1)
 
-
-list = [1,2,3,4,5]
+list = [1,2,3,4,5,6]
 list_array = np.array(list)
 print("list_array:{},type:{}".format(list_array,type(list_array)))
+
+print(np.array(list).reshape(2,3,1))

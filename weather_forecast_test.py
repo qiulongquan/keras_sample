@@ -16,14 +16,17 @@ import pandas
 import pickle
 from PIL import Image
 
-test_data_src_dir = "/Users/t-lqiu/keras_sample/data/weather_forecast/test/image/"
-test_label_csv = "/Users/t-lqiu/keras_sample/data/weather_forecast/test/csv/weather.csv"
-train_data_src_dir = "/Users/t-lqiu/keras_sample/data/weather_forecast/train/image/"
-train_label_csv = "/Users/t-lqiu/keras_sample/data/weather_forecast/train/csv/weather.csv"
+sys_dir = os.getcwd()
+test_data_src_dir = sys_dir + "/data/weather_forecast/test/image/"
+test_label_csv = sys_dir + "/data/weather_forecast/test/csv/weather.csv"
+train_data_src_dir = sys_dir + "/data/weather_forecast/train/image/"
+train_label_csv = sys_dir + "/data/weather_forecast/train/csv/weather.csv"
 
 def img2nparray(file):
     img = Image.open(file, "r")
     array = numpy.asarray(img, dtype="uint8")
+    print(array.shape[0])
+    print(array.shape[1])
     array = array.reshape(array.shape[0], array.shape[1], 3)
     return array
 
