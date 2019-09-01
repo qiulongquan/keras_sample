@@ -14,7 +14,7 @@ from keras import backend as K
 
 batch_size = 128
 num_classes = 10
-epochs = 1
+epochs = 3
 
 # input image dimensions
 # 图片默认导入的尺寸28 28
