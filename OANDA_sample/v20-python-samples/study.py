@@ -18,9 +18,9 @@ from pandas.plotting import scatter_matrix
 #          ]
 
 INDEIES = [
-           "GSPC",  # S&P 500, US
-            "N225",
             "HSI",
+            "GSPC",  # S&P 500, US
+            # "N225",
             "BVSP",
             "IXIC"
           ]
@@ -43,6 +43,19 @@ def study():
         closing[index] = closing[index] / max(closing[index])
         closing_bk[index] = closing_bk[index] / max(closing_bk[index])
         closing[index] = np.log(closing[index] / closing[index].shift())
+        # 关闭下面的2行，相关度就会下降，还是打开的好。1表示完成相关，-1表示完全不相关
+        if index is not "HSI":  # これと
+            closing[index] = closing[index].shift()   # これ追加
+
+    print("start--显示相关度--:\n", closing.corr()["HSI"])
+    print("end--------------")
+    # start ------------:
+    # HSI   1.000000
+    # GSPC  0.329244
+    # BVSP  0.257701
+    # IXIC  0.322970
+    # Name: HSI, dtype: float64
+
     #グラフ表示
     closing.plot()
     # plt.show()
@@ -56,7 +69,7 @@ def study():
         autocorrelation_plot(closing[index], label=index)
     # plt.show()
 
-    # 自己相関
+    # sin図
     fig = plt.figure()
     # 通过设定width和height来设定输出图片的尺寸
     fig.set_figwidth(5)
