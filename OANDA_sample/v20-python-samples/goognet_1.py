@@ -25,16 +25,16 @@ import tensorflow as tf
 
 
 DAYS_BACK = 3
-FROM_YEAR = '1991'
+FROM_YEAR = '2016'
 EXCHANGES_DEFINE = [
-    ['DOW', '^DJI'],
-    ['FTSE', '^FTSE'],
-    ['GDAXI', '^GDAXI'],
-    ['HSI', '^HSI'],
-    ['N225', '^N225'],
-    ['NASDAQ', '^IXIC'],
-    ['SP500', '^GSPC'],
-    ['SSEC', '000001.SS'],
+    # ['DOW', '^DJI'],
+    # ['FTSE', '^FTSE'],
+    # ['GDAXI', '^GDAXI'],
+    # ['HSI', '^HSI'],
+    # ['N225', '^N225'],
+    # ['NASDAQ', '^IXIC'],
+    ['SP500', 'GSPC'],
+    # ['SSEC', '000001.SS'],
 ]
 EXCHANGES_LABEL = [exchange[0] for exchange in EXCHANGES_DEFINE]
 
@@ -320,7 +320,9 @@ def tf_confusion_metrics(model, actual_classes, session, feed_dict):
     recall = tpr
     if (float(tp) + float(fp)):
         precision = float(tp)/(float(tp) + float(fp))
-        f1_score = (2 * (precision * recall)) / (precision + recall)
+        print("precision:", precision)
+        print("recall:", recall)
+        f1_score = (2 * (precision * recall)) / (precision + recall+1)
     else:
         precision = 0
         f1_score = 0
@@ -450,7 +452,7 @@ def feed_dict(env, test=False):
 
 def main(args):
     print('株価指標データをダウンロードしcsvファイルに保存')
-    fetchStockIndexes()
+    # fetchStockIndexes()
     print('株価指標データを読み込む')
     all_data  = load_exchange_dataframes()
     print('終値を取得')
