@@ -11,6 +11,26 @@ https://qiita.com/verizi/items/2685ed83b69a6830848e
 ・TensorFlowのバージョン違い 私は1.3を使用しています。
 ・quandlからYAHOOなどが撤退しデータがとれない。
 ・普通にバグってる？closingdataをfillnaで埋めた後の処理がなんかへんでlogとるとヘンテコな値がかえってきます。
+
+使用conda 安装python2.7，然后安装tensorflow 然后运行python goognet.py SP500
+现在的问题 10次运行的结果基本一样，第一次的结果55%和参考是一样的，后面的结果没有提高更新，需要分析参考程序，数据是不是不足。
+1000 0.55160743
+2000 0.55160743
+3000 0.55160743
+4000 0.55160743
+5000 0.55160743
+6000 0.55160743
+7000 0.55499154
+8000 0.55160743
+9000 0.55160743
+10000 0.55160743
+precision: 0.0
+recall: 0.0
+Precision =  0.0
+Recall =  0.0
+F1 Score =  0.0
+Accuracy =  0.540540540541
+
 '''
 from __future__ import print_function
 
