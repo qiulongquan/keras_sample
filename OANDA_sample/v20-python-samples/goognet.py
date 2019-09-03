@@ -5,6 +5,12 @@ https://github.com/corrieelston/datalab/blob/master/FinancialTimeSeriesTensorFlo
 https://qiita.com/akiraak/items/b27a5616a94cd64a8653
 https://github.com/akiraak/tensorflow-stock-index/tree/1.0
 
+
+https://qiita.com/verizi/items/2685ed83b69a6830848e
+こちらも参考にさせて頂きましたが、以下の理由で動かなかったです。
+・TensorFlowのバージョン違い 私は1.3を使用しています。
+・quandlからYAHOOなどが撤退しデータがとれない。
+・普通にバグってる？closingdataをfillnaで埋めた後の処理がなんかへんでlogとるとヘンテコな値がかえってきます。
 '''
 from __future__ import print_function
 
