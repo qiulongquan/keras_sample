@@ -1,10 +1,21 @@
 # -*- coding: utf-8 -*-
 '''
 Code based on:
+2015年google推出的预测未来股票经济数值的例子 英文版
 https://github.com/corrieelston/datalab/blob/master/FinancialTimeSeriesTensorFlow.ipynb
-https://qiita.com/akiraak/items/b27a5616a94cd64a8653
-https://github.com/akiraak/tensorflow-stock-index/tree/1.0
 
+google日文版  財務時系列データを使用した機械学習
+https://cloud.google.com/solutions/machine-learning-with-financial-time-series-data
+
+这个代码看了，一半是处理如何数据下载的，还有一部分是数据构筑，和参数分析 arg parse的，py2.7版本有点老了，无法本地运行起来。
+如果需要
+arg pares 写法
+csv下载 导入 输出的写法
+可以参考
+https://qiita.com/akiraak/items/b27a5616a94cd64a8653
+
+pandas解析说明，2685ed83b69a6830848e的例子里面需要pandas的知识
+https://qiita.com/hik0107/items/d991cc44c2d1778bb82e
 
 https://qiita.com/verizi/items/2685ed83b69a6830848e
 こちらも参考にさせて頂きましたが、以下の理由で動かなかったです。
@@ -13,6 +24,11 @@ https://qiita.com/verizi/items/2685ed83b69a6830848e
 ・普通にバグってる？closingdataをfillnaで埋めた後の処理がなんかへんでlogとるとヘンテコな値がかえってきます。
 
 使用conda 安装python2.7，然后安装tensorflow 然后运行python goognet.py SP500
+
+conda create -n py27 python=2.7 anaconda
+
+conda info -e
+
 现在的问题 10次运行的结果基本一样，第一次的结果55%和参考是一样的，后面的结果没有提高更新，需要分析参考程序，数据是不是不足。
 1000 0.55160743
 2000 0.55160743
@@ -35,7 +51,7 @@ Accuracy =  0.540540540541
 from __future__ import print_function
 
 import datetime
-import urllib2
+# import urllib2
 from os import path
 import operator as op
 from collections import namedtuple
@@ -45,7 +61,7 @@ import tensorflow as tf
 
 
 DAYS_BACK = 3
-FROM_YEAR = '2016'
+FROM_YEAR = '1991'
 EXCHANGES_DEFINE = [
     # ['DOW', '^DJI'],
     # ['FTSE', '^FTSE'],
@@ -64,38 +80,38 @@ Dataset = namedtuple(
 Environ = namedtuple('Environ', 'sess model actual_classes training_step dataset feature_data')
 
 
-def setupDateURL(urlBase):
-    now = datetime.date.today()
-    return urlBase.replace('__FROM_YEAR__', FROM_YEAR)\
-            .replace('__TO_MONTH__', str(now.month - 1))\
-            .replace('__TO_DAY__', str(now.day))\
-            .replace('__TO_YEAR__', str(now.year))
+# def setupDateURL(urlBase):
+#     now = datetime.date.today()
+#     return urlBase.replace('__FROM_YEAR__', FROM_YEAR)\
+#             .replace('__TO_MONTH__', str(now.month - 1))\
+#             .replace('__TO_DAY__', str(now.day))\
+#             .replace('__TO_YEAR__', str(now.year))
 
 
-def fetchCSV(fileName, url):
-    if path.isfile(fileName):
-        print('fetch CSV for local: ' + fileName)
-        with open(fileName) as f:
-            return f.read()
-    else:
-        print('fetch CSV for url: ' + url)
-        csv = urllib2.urlopen(url).read()
-        with open(fileName, 'w') as f:
-            f.write(csv)
-        return csv
+# def fetchCSV(fileName, url):
+#     if path.isfile(fileName):
+#         print('fetch CSV for local: ' + fileName)
+#         with open(fileName) as f:
+#             return f.read()
+#     else:
+#         print('fetch CSV for url: ' + url)
+#         csv = urllib2.urlopen(url).read()
+#         with open(fileName, 'w') as f:
+#             f.write(csv)
+#         return csv
 
 
-def fetchYahooFinance(name, code):
-    fileName = 'index_%s.csv' % name
-    url = setupDateURL('http://chart.finance.yahoo.com/table.csv?s=%s&a=0&b=1&c=__FROM_YEAR__&d=__TO_MONTH__&e=__TO_DAY__&f=__TO_YEAR__&g=d&ignore=.csv' % code)
-    csv = fetchCSV(fileName, url)
+# def fetchYahooFinance(name, code):
+#     fileName = 'index_%s.csv' % name
+#     url = setupDateURL('http://chart.finance.yahoo.com/table.csv?s=%s&a=0&b=1&c=__FROM_YEAR__&d=__TO_MONTH__&e=__TO_DAY__&f=__TO_YEAR__&g=d&ignore=.csv' % code)
+#     csv = fetchCSV(fileName, url)
 
 
-def fetchStockIndexes():
-    '''株価指標のデータをダウンロードしファイルに保存
-    '''
-    for exchange in EXCHANGES_DEFINE:
-        fetchYahooFinance(exchange[0], exchange[1])
+# def fetchStockIndexes():
+#     '''株価指標のデータをダウンロードしファイルに保存
+#     '''
+#     for exchange in EXCHANGES_DEFINE:
+#         fetchYahooFinance(exchange[0], exchange[1])
 
 
 def load_exchange_dataframes():
@@ -474,7 +490,7 @@ def main(args):
     print('株価指標データをダウンロードしcsvファイルに保存')
     # fetchStockIndexes()
     print('株価指標データを読み込む')
-    all_data  = load_exchange_dataframes()
+    all_data = load_exchange_dataframes()
     print('終値を取得')
     closing_data = get_closing_data(all_data)
     print('データを学習に使える形式に正規化')
