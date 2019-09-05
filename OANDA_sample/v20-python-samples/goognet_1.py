@@ -354,14 +354,18 @@ def tf_confusion_metrics(model, actual_classes, session, feed_dict):
     accuracy = (float(tp) + float(tn))/(float(tp) + float(fp) + float(fn) + float(tn))
 
     recall = tpr
-    if (float(tp) + float(fp)):
-        precision = float(tp)/(float(tp) + float(fp))
-        print("precision:", precision)
-        print("recall:", recall)
-        f1_score = (2 * (precision * recall)) / (precision + recall+1)
-    else:
-        precision = 0
-        f1_score = 0
+
+    precision = float(tp) / (float(tp) + float(fp))
+    f1_score = (2 * (precision * recall)) / (precision + recall+1)
+
+    # if (float(tp) + float(fp)):
+    #     precision = float(tp)/(float(tp) + float(fp))
+    #     print("precision:", precision)
+    #     print("recall:", recall)
+    #     f1_score = (2 * (precision * recall)) / (precision + recall)
+    # else:
+    #     precision = 0
+    #     f1_score = 0
 
     print('Precision = ', precision)
     print('Recall = ', recall)
@@ -379,8 +383,11 @@ def simple_network(dataset):
     num_classes = len(dataset.training_classes.columns)
 
     # Define placeholders for the data we feed into the process - feature data and actual classes.
-    feature_data = tf.placeholder("float", [None, num_predictors])
-    actual_classes = tf.placeholder("float", [None, num_classes])
+    feature = tf.placeholder(tf.float32, shape=(None, num_predictors))
+    actual_classes = tf.placeholder(tf.float32,  shape=(None, num_classes))
+
+    # feature_data = tf.placeholder("float", [None, num_predictors])
+    # actual_classes = tf.placeholder("float", [None, num_classes])
 
     # Define a matrix of weights and initialize it with some small random values.
     weights = tf.Variable(tf.truncated_normal([num_predictors, num_classes], stddev=0.0001))
@@ -388,7 +395,7 @@ def simple_network(dataset):
 
     # Define our model...
     # Here we take a softmax regression of the product of our feature data and weights.
-    model = tf.nn.softmax(tf.matmul(feature_data, weights) + biases)
+    model = tf.nn.softmax(tf.matmul(feature, weights) + biases)
 
     # Define a cost function (we're using the cross entropy).
     cost = -tf.reduce_sum(actual_classes * tf.log(model))
@@ -397,8 +404,36 @@ def simple_network(dataset):
     # Here we use gradient descent with a learning rate of 0.01 using the cost function we just defined.
     training_step = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
 
-    init = tf.initialize_all_variables()
+    init = tf.global_variables_initializer()
+    # init = tf.initialize_all_variables()
     sess.run(init)
+
+    correct_prediction = tf.equal(tf.argmax(model, 1), tf.argmax(actual_classes, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    actual_classes_param = dataset.training_classes.values.reshape(len(dataset.training_classes.values), 2)
+
+    for i in range(1, 30001):
+        sess.run(
+            training_step,
+            feed_dict={
+                feature: dataset.training_predictors.values,
+                actual_classes: actual_classes_param
+            }
+        )
+        if i % 5000 == 0:
+            print(i, sess.run(
+                accuracy,
+                feed_dict={
+                    feature: dataset.training_predictors.values,
+                    actual_classes: actual_classes_param
+                }
+            ))
+    feed_dict = {
+        feature: dataset.test_predictors.values,
+        actual_classes: dataset.test_classes.values.reshape(len(dataset.test_classes.values), 2)
+    }
+
+    tf_confusion_metrics(model, actual_classes, sess, feed_dict)
 
     return Environ(
         sess=sess,
@@ -406,7 +441,7 @@ def simple_network(dataset):
         actual_classes=actual_classes,
         training_step=training_step,
         dataset=dataset,
-        feature_data=feature_data,
+        feature_data=feature,
     )
 
 
@@ -503,7 +538,7 @@ def main(args):
     dataset = split_training_test_data(num_categories, training_test_data)
 
     print('器械学習のネットワークを作成')
-    #env = simple_network(dataset)
+    # env = simple_network(dataset)
     env = smarter_network(dataset)
 
     if args.inspect:
