@@ -2,10 +2,14 @@
 '''
 Code based on:
 2015年google推出的预测未来股票经济数值的例子 英文版
+程序版本太老了，很多库都过时了，放弃这个例子
 https://github.com/corrieelston/datalab/blob/master/FinancialTimeSeriesTensorFlow.ipynb
 
 google日文版  財務時系列データを使用した機械学習
 https://cloud.google.com/solutions/machine-learning-with-financial-time-series-data
+
+Python Pandasでのデータ操作の初歩まとめ − 前半：データ作成＆操作編
+https://qiita.com/hik0107/items/d991cc44c2d1778bb82e
 
 这个代码看了，一半是处理如何数据下载的，还有一部分是数据构筑，和参数分析 arg parse的，py2.7版本有点老了，无法本地运行起来。
 如果需要
@@ -47,6 +51,9 @@ Recall =  0.0
 F1 Score =  0.0
 Accuracy =  0.540540540541
 
+代码不完整，无法正常的运行。
+程序版本太老，参考意义不大。
+先暂时放弃这个例子。
 '''
 from __future__ import print_function
 
@@ -292,6 +299,8 @@ def split_training_test_data(num_categories, training_test_data):
     )
 
 
+
+
 def tf_confusion_metrics(model, actual_classes, session, feed_dict):
     '''与えられたネットワークの正解率などを出力する。
     '''
@@ -444,7 +453,7 @@ def simple_network(dataset):
         feature_data=feature,
     )
 
-
+# 隐藏层为2的时候
 def smarter_network(dataset):
     '''隠しレイヤー入りのもうちょっと複雑な分類モデルを返す。
     '''
@@ -453,8 +462,8 @@ def smarter_network(dataset):
     num_predictors = len(dataset.training_predictors.columns)
     num_classes = len(dataset.training_classes.columns)
 
-    feature_data = tf.placeholder("float", [None, num_predictors])
-    actual_classes = tf.placeholder("float", [None, num_classes])
+    feature_data = tf.placeholder(tf.float32, [None, num_predictors])
+    actual_classes = tf.placeholder(tf.float32, [None, num_classes])
 
     weights1 = tf.Variable(tf.truncated_normal([(DAYS_BACK * len(EXCHANGES_DEFINE)), 50], stddev=0.0001))
     biases1 = tf.Variable(tf.ones([50]))
@@ -474,8 +483,32 @@ def smarter_network(dataset):
 
     training_step = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
 
-    init = tf.initialize_all_variables()
+    # init = tf.initialize_all_variables()
+    init = tf.global_variables_initializer()
     sess.run(init)
+
+    correct_prediction = tf.equal(tf.argmax(model, 1), tf.argmax(actual_classes, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    actual_classes_param = dataset.training_classes.values.reshape(len(dataset.training_classes.values), 2)
+
+    for i in range(1, 30001):
+        sess.run(
+            training_step,
+            feed_dict={
+                feature_data: dataset.training_predictors.values,
+                actual_classes: actual_classes_param
+            }
+        )
+        if i % 5000 == 0:
+            print(i, sess.run(
+                accuracy,
+                feed_dict={
+                    feature_data: dataset.training_predictors.values,
+                    actual_classes: actual_classes_param
+                }
+            ))
+
+    tf_confusion_metrics(model, actual_classes, sess, feed_dict)
 
     return Environ(
         sess=sess,
@@ -538,8 +571,8 @@ def main(args):
     dataset = split_training_test_data(num_categories, training_test_data)
 
     print('器械学習のネットワークを作成')
-    # env = simple_network(dataset)
-    env = smarter_network(dataset)
+    env = simple_network(dataset)
+    # env = smarter_network(dataset)
 
     if args.inspect:
         import code
